@@ -1,0 +1,35 @@
+function sendToSlack(channel, text) {
+  var url = "【おしらせしたい該当チャンネルのIncomming WebhookのURL】";
+  var data = { "channel" : channel, "username" : "通知bot名", "text" : text, "icon_emoji" : "【Slackで登録されている絵文字】" };
+  var payload = JSON.stringify(data);
+
+  var options = {
+    "method" : "POST",
+    "contentType" : "application/json",
+    "payload" : payload
+  };
+  var response = UrlFetchApp.fetch(url, options);
+
+}
+function test() {
+  sendToSlack("【テストを飛ばしたい該当チャンネル】", "【テストだよ〜（変更可）】");
+}
+
+function onFormSubmit(e){
+  var message = "";
+  var itemResponse = e.response.getItemResponses();
+  
+  for (var i = 0; i < itemResponse.length; i++){
+    var formData = itemResponse[i];
+    var title = formData.getItem().getTitle();
+    var response = formData.getResponse();
+    
+    if (title.match(/氏名/)) {
+      message += response;
+    }
+  }
+        
+  message += "【メッセージやURLなど、伝えたい内容】";
+
+  sendToSlack("【メッセージを飛ばしたいチャンネル】", message);
+}
