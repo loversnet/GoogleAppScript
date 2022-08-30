@@ -1,6 +1,29 @@
-function sendToSlack(channel, text) {
-  var url = "【おしらせしたい該当チャンネルのIncomming WebhookのURL】";
-  var data = { "channel" : channel, "username" : "通知bot名", "text" : text, "icon_emoji" : "【Slackで登録されている絵文字】" };
+function myFunction() {
+  
+  //取得するスプシの情報を書き換える
+  var ss = SpreadsheetApp.openById('【スプシのシートID】');
+  var sheet = ss.getSheetByName('【スプシの対象シート名】');
+
+  
+  var Value = ss.getSheetByName('【スプシの対象シート名】').getRange("【抽出範囲（例／A2:L）】").getValues(); 
+ 
+var name = "";
+  for (var i = 0; i < Value.length; i++){
+    if(Value[i][0]==""){
+      break; 
+    }
+    name = Value[i][0];
+  } 
+      
+ Logger.log(Value[i]);   
+    
+ 
+  
+  var text = name;
+  text += "【メッセージ】"
+
+  var url = "【WebHookのURL】";
+  var data = { "channel" : "【飛ばしたいSlackチャンネル名】", "username" : "【botの名前】", "text" : text, "icon_emoji" : "【アイコン】" };
   var payload = JSON.stringify(data);
 
   var options = {
@@ -8,28 +31,6 @@ function sendToSlack(channel, text) {
     "contentType" : "application/json",
     "payload" : payload
   };
+
   var response = UrlFetchApp.fetch(url, options);
-
-}
-function test() {
-  sendToSlack("【テストを飛ばしたい該当チャンネル】", "【テストだよ〜（変更可）】");
-}
-
-function onFormSubmit(e){
-  var message = "";
-  var itemResponse = e.response.getItemResponses();
-  
-  for (var i = 0; i < itemResponse.length; i++){
-    var formData = itemResponse[i];
-    var title = formData.getItem().getTitle();
-    var response = formData.getResponse();
-    
-    if (title.match(/氏名/)) {
-      message += response;
-    }
-  }
-        
-  message += "【メッセージやURLなど、伝えたい内容】";
-
-  sendToSlack("【メッセージを飛ばしたいチャンネル】", message);
 }
