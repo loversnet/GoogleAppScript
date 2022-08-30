@@ -1,32 +1,31 @@
-function CreatePDF() {
-  var ssid = "【スプレッドシートのURL】";
+function createPDF() {
   
-    var objSpreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  var ssid = "　【スプシのID】";
+  
+  var objSpreadsheet = SpreadsheetApp.getActiveSpreadsheet();
 	// スプレッドシート
-  var datass = objSpreadsheet.getSheetByName("フォームの回答");
-  var pdfss = objSpreadsheet.getSheetByName("PDFフォーム");
+  var datass = objSpreadsheet.getSheetByName("【スプシの該当シート名】");
+  var pdfss = objSpreadsheet.getSheetByName("【PDFに変更するシート名】");
   var request_date = Utilities.formatDate(new Date(),"Asia/Tokyo","YYYY-MM-dd");
   
+  //最終行
+  //var newdatalow = datass.getLastRow();
   
 	// 選択セル範囲
 	var range = datass.getActiveRange();
 	// セル範囲の行番号
   var rowIndex = range.getRowIndex();
+  
 	// セル範囲の列番号
 	var colIndex = range.getColumnIndex();
-
-    
-    var arydata = datass.getRange(rowIndex, 1, 1, 21).getValues(); 
-
-
- Logger.log(arydata);
+  
+  //var arydata = datass.getRange(newdatalow, 1, 1, 30).getValues(); //質問項目が増えたら「30」のところを増やします。
+  var arydata = datass.getRange(rowIndex, 1, 1, 30).getValues(); //質問項目が増えたら「30」のところを増やします。
+  
+ //Logger.log(arydata);
   var DocumentNumber = String(rowIndex-1); //アンケートの採番用にインデックス行を除いて1から管理番号として設定します。"2019" + String(lastrow-1)としたり、応用の幅があります。
-
+  
   var data = arydata[0];
-
-    Logger.log(data[3]);
-
-   var name = data[1]; 
    
     
   pdfss.getRange("B1").setValue(DocumentNumber);
@@ -82,24 +81,64 @@ function CreatePDF() {
     // API使用のためのOAuth認証
     var token = ScriptApp.getOAuthToken();
 
+Logger.log(url + options)    
+    
     var response = UrlFetchApp.fetch(url + options, {
       headers: {
         "Authorization": "Bearer " + token
       }
     });
 
-    // ファイル名を作成「応募日時_名前_管理番号.pdf」（自由に決められます）
+    // ファイル名を作成「応募日時_名前_管理番号.pdf」
     var fileName = request_date + "_" + name + "_" + DocumentNumber + ".pdf";
     // Googleドライブでフォルダを作成してURLからIDを入力
-    var folder = DriveApp.getFolderById("【PDF化したものを格納するフォルダのURL】");
+    var folder = DriveApp.getFolderById("1uj9Kb7qNEDbJaC3BLH8889tcJQSMU550");
+    //var folder = DriveApp.getFolderById("1jYSIxWjt4IWiqU7gruH5MyM8C5RQMsM-"); // tnmt test
     var fileBlob = response.getBlob().setName(fileName);
 
     Logger.log(fileName);
     
     folder.createFile(fileBlob);
 
-
+    
+ 
+    
+    
   } catch (e) {
     Logger.log("ファイル生成に失敗しました" + e)
   }
+  
+  sendToSlack(data[0]);
+  
+//  return data;
+}
+
+
+function sendToSlack(name) {
+  
+  var text = name;
+  text += "【メッセージ】";
+  //text += "【この通知はテストです】";
+  var channel = "【Slackで通知したいチャンネル（#つける）】"
+  var url = "【SlackチャンネルのWebHookURL】";
+　var post_data = { "channel" : channel, "username" : "【通知時の名前】", "text" : text, "icon_emoji" : "【表示するアイコン（::で囲う）】" };
+  var payload = JSON.stringify(post_data);
+  var options = {
+    "method" : "POST",
+    "contentType" : "application/json",
+    "payload" : payload
+  };
+  var response = UrlFetchApp.fetch(url, options);
+}
+
+function delete_sheets(){
+　var bk = SpreadsheetApp.getActiveSpreadsheet();
+　var cnt = bk.getNumSheets();
+
+  Logger.log(cnt);
+
+  for(var i = 0; i < cnt-30; i++){
+　　var sh = bk.getSheets()[50];
+　　bk.deleteSheet(sh);
+　}
 }
